@@ -1,189 +1,198 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>🎵 Song Library</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
-    <style>
-        body {
-            background-color: #121212;
-            color: #ffffff;
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
-        }
-        .container {
-            padding: 1.5rem 1rem;
-            max-width: 1200px;
-        }
-        .list-group-item {
-            background-color: #1f1f1f;
-            border: none;
-            border-radius: 0.5rem;
-            padding: 1.25rem;
-            margin-bottom: 1rem;
-            transition: background-color 0.2s;
-        }
-        .list-group-item:hover {
-            background-color: #2a2a2a;
-        }
-        .audio-player {
-            width: 250px;
-            max-width: 100%;
-        }
-        .btn-warning {
-            background-color: #f0ad4e;
-            border: none;
-            padding: 0.5rem 1rem;
-        }
-        .btn-warning:hover {
-            background-color: #ec971f;
-        }
-        .btn-outline-light {
-            padding: 0.5rem 1rem;
-        }
-        .form-control {
-            background-color: #2a2a2a;
-            border: 1px solid #444;
-            color: #ffffff;
-        }
-        .form-control:focus {
-            background-color: #2a2a2a;
-            color: #ffffff;
-            border-color: #1DB954;
-            box-shadow: none;
-        }
-        h2 {
-            font-size: 1.75rem;
-        }
-        h5 {
-            font-size: 1.125rem;
-            margin-bottom: 0.5rem;
-        }
-        p, small {
-            font-size: 0.875rem;
-        }
-        .text-muted {
-            color: #b3b3b3 !important;
-        }
+  <meta charset="UTF-8">
+  <title>🎵 Song Library</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
+  <style>
+    body {
+      background-color: #121212;
+      color: #ffffff;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+    }
+    .container {
+      padding: 1.5rem 1rem;
+      max-width: 1200px;
+    }
+    .card {
+      background-color: #1f1f1f;
+      border: none;
+      border-radius: 0.5rem;
+      padding: 1.25rem;
+      transition: 0.2s ease;
+    }
+    .card:hover {
+      background-color: #2a2a2a;
+      transform: scale(1.01);
+      cursor: pointer;
+    }
+    .audio-player {
+      width: 250px;
+      max-width: 100%;
+    }
+    .btn-warning {
+      background-color: #f0ad4e;
+      border: none;
+      padding: 0.5rem 1rem;
+    }
+    .btn-warning:hover {
+      background-color: #ec971f;
+    }
+    .btn-outline-light {
+      padding: 0.5rem 1rem;
+    }
+    .form-control {
+      background-color: #2a2a2a;
+      border: 1px solid #444;
+      color: #ffffff;
+    }
+    .form-control:focus {
+      background-color: #2a2a2a;
+      color: #ffffff;
+      border-color: #1DB954;
+      box-shadow: none;
+    }
+    h2 {
+      font-size: 1.75rem;
+    }
+    h5 {
+      font-size: 1.125rem;
+      margin-bottom: 0.5rem;
+      color:antiquewhite;
+    }
+    p, small {
+      font-size: 0.875rem;
+    }
+    .text-muted {
+      color: #b3b3b3 !important;
+    }
+    .song-title {
+    color: antiquewhite;
+    }
+    .user-hover {
+    cursor: pointer;
+    }
 
-        /* Responsive adjustments */
-        @media (max-width: 768px) {
-            .container {
-                padding: 1rem 0.75rem;
-            }
-            .list-group-item {
-                padding: 1rem;
-            }
-            .audio-player {
-                width: 100%;
-                margin-top: 0.5rem;
-            }
-            .song-details {
-                flex: 1;
-            }
-            .song-item {
-                flex-direction: column;
-                align-items: flex-start !important;
-            }
-            h2 {
-                font-size: 1.5rem;
-            }
-            h5 {
-                font-size: 1rem;
-            }
-            .btn-warning, .btn-outline-light {
-                padding: 0.5rem 0.75rem;
-                font-size: 0.875rem;
-            }
-            .input-group {
-                flex-direction: column;
-            }
-            .input-group .form-control,
-            .input-group .btn {
-                width: 100%;
-                margin-bottom: 0.5rem;
-            }
-        }
+    .user-email-tooltip {
+        display: none;
+        position: absolute;
+        bottom: -1.8rem;
+        left: 0;
+        background-color: #333;
+        color: #fff;
+        padding: 4px 8px;
+        border-radius: 4px;
+        font-size: 0.8rem;
+        white-space: nowrap;
+        z-index: 10;
+    }
 
-        @media (max-width: 576px) {
-            .header-section {
-                flex-direction: column;
-                align-items: flex-start !important;
-            }
-            .header-section div, .header-section a {
-                margin-top: 0.5rem;
-            }
-            .btn-sm {
-                width: 100%;
-                text-align: center;
-            }
-        }
+    .user-hover:hover .user-email-tooltip {
+        display: block;
+    }
 
-        /* Touch-friendly adjustments */
-        @media (hover: none) {
-            .btn-warning, .btn-outline-light, .btn-sm {
-                min-height: 44px;
-                min-width: 100px;
-            }
-            .form-control {
-                min-height: 44px;
-            }
-        }
-    </style>
+    @media (max-width: 768px) {
+      .container {
+        padding: 1rem 0.75rem;
+      }
+      .audio-player {
+        width: 100%;
+        margin-top: 0.5rem;
+      }
+    }
+  </style>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+
 </head>
 <body class="bg-dark text-light">
-    <div class="container">
-        <div class="d-flex justify-content-between align-items-center mb-4 header-section">
-            <h2>🎧 Song Library</h2>
-            {% if user %}
-                <div>
-                    Logged in as <strong>{{ user }}</strong> |
-                    <a href="/logout" class="text-warning">Logout</a>
+<div class="container">
+  <div class="d-flex justify-content-between align-items-center mb-4 header-section">
+    <h2>🎧 Flaskify</h2>
+    {% if user %}
+      <div class="d-flex align-items-center">
+        <div class="position-relative user-hover d-inline-block me-2">
+          <i class="bi bi-person-circle fs-4 text-white"></i>
+          <div class="user-email-tooltip">
+            {{ user }}
+          </div>
+        </div>
+        <a href="/logout" class="text-warning">Logout</a>
+      </div>
+    {% else %}
+      <a href="/login" class="btn btn-sm btn-warning">Login</a>
+    {% endif %}
+  </div>
+
+
+    <!-- Search Form -->
+    <form method="get" action="{{ url_for('songs') }}" class="mb-4">
+      <div class="input-group">
+        <input type="text" class="form-control" name="q" placeholder="Search by title or artist..." value="{{ query }}">
+        <button class="btn btn-success" type="submit">Search</button>
+      </div>
+    </form>
+
+    <!-- Song List -->
+    {% if songs %}
+      <div class="row row-cols-1 row-cols-md-2 g-4">
+        {% for song in songs %}
+          <div class="col">
+            <a href="{% if song.source == 'local' %}
+             {{ url_for('song_page', filename=song.filename) }}
+         {% else %}
+             {{ url_for('jamendo_song_page', track_id=song.id) }}
+         {% endif %}"  
+               class="text-decoration-none text-white" 
+               {% if song.source == 'jamendo' %} target="_blank" {% endif %}>
+              <div class="card h-100 shadow-sm">
+                <div class="card-body d-flex flex-column justify-content-between">
+                  <div class="d-flex justify-content-between">
+                    <div>
+                    <h5 class="card-title song-title">
+                        {{ song.title or song.name }}
+                    </h5>
+
+
+                      <p class="card-text mb-1">
+                        {{ song.artist if song.source == "local" else song.artist_name }}
+                      </p>
+                      {% if song.source == "jamendo" and song.duration %}
+                        <p class="text-muted mb-0">⏱ {{ song.duration // 60 }}:{{ '%02d' % (song.duration % 60) }} min</p>
+                      {% endif %}
+                      {% if song.source == "jamendo" %}
+                        <span class="badge bg-success">Jamendo</span>
+                      {% else %}
+                        <span class="badge bg-info text-dark">Uploaded</span>
+                      {% endif %}
+                    </div>
+                    {% if song.source == "jamendo" and song.album_image %}
+                      <img src="{{ song.album_image }}" alt="Album cover" class="img-fluid rounded" width="80">
+                    {% endif %}
+                  </div>
+
+                  <audio controls class="mt-3 w-100">
+                    <source src="{% if song.source == 'local' %}{{ url_for('serve_song', filename=song.filename) }}{% else %}{{ song.audio }}{% endif %}" type="audio/mpeg">
+                    Your browser does not support the audio element.
+                  </audio>
+
+                  {% if song.source == "local" and song.uploader %}
+                    <small class="text-muted mt-2 d-block">Uploader: {{ song.uploader }}</small>
+                  {% endif %}
                 </div>
-            {% else %}
-                <a href="/login" class="btn btn-sm btn-warning">Login</a>
-            {% endif %}
-        </div>
+              </div>
+            </a>
+          </div>
+        {% endfor %}
+      </div>
+    {% else %}
+      <p class="text-muted">No songs found. Try uploading or searching again.</p>
+    {% endif %}
 
-        <!-- Search form -->
-        <form method="get" class="input-group mb-4">
-            <input type="text" name="q" class="form-control" value="{{ query }}" placeholder="Search by title or artist...">
-            <button class="btn btn-outline-light" type="submit">Search</button>
-        </form>
-
-        <!-- Song list -->
-        {% if songs %}
-            <div class="list-group">
-                {% for song in songs %}
-                    <a href="{{ url_for('song_page', filename=song.filename) }}" class="text-decoration-none">
-                        <div class="list-group-item bg-secondary text-white rounded">
-                            <div class="d-flex justify-content-between align-items-center song-item">
-                                <div class="song-details">
-                                    <h5>{{ song.title }}</h5>
-                                    <p class="mb-1">By {{ song.artist }}</p>
-                                    {% if song.uploader %}
-                                        <small class="text-muted">Uploaded by {{ song.uploader }}</small>
-                                    {% endif %}
-                                </div>
-                                <div class="ms-3">
-                                    <audio controls preload="none" class="audio-player">
-                                        <source src="{{ url_for('serve_song', filename=song.filename) }}" type="audio/mpeg">
-                                        Your browser does not support the audio element.
-                                    </audio>
-                                </div>
-                            </div>
-                        </div>
-                    </a>
-                {% endfor %}
-            </div>
-        {% else %}
-            <p class="text-muted">No songs found.</p>
-        {% endif %}
-
-        <div class="mt-4">
-            <a href="/" class="btn btn-outline-light">⬅ Home</a>
-            <a href="/upload" class="btn btn-warning">Upload a Song</a>
-        </div>
+    <div class="mt-4">
+      <a href="/" class="btn btn-outline-light">⬅ Home</a>
+      <a href="/upload" class="btn btn-warning">Upload a Song</a>
     </div>
+  </div>
 </body>
 </html>

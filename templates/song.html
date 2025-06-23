@@ -33,9 +33,15 @@
       {% if song.uploader %}
         <p><small>Uploaded by: {{ song.uploader }}</small></p>
       {% endif %}
+{% if song.album_image %}
+  <img src="{{ song.album_image }}" alt="Album Art" class="img-fluid rounded my-3" style="max-height: 200px;">
+{% endif %}
+
+
 
       <audio controls autoplay class="my-4">
-        <source src="{{ url_for('serve_song', filename=song.filename) }}" type="audio/mpeg">
+        <source src="{% if song.audio %}{{ song.audio }}{% else %}{{ url_for('serve_song', filename=song.filename) }}{% endif %}" type="audio/mpeg">
+
       </audio>
 
       <div>

@@ -6,7 +6,7 @@ Flask-based mini-Spotify clone
 """
 
 import os
-import json
+import json,requests
 from flask import (
     Flask, render_template, request, redirect,
     url_for, session, send_from_directory, flash
@@ -28,7 +28,7 @@ from firebase_admin import credentials, firestore, auth
 #    • Fallback to FIREBASE_CONFIG env-var
 # ───────────────────────────────────────────────
 CRED_FILE_PATH = "/etc/secrets/firebase_config.json"  # Render secret-file mount point
-
+JAMENDO_API_KEY = "97c3c1fb"  # Leave as-is per your request
 if os.path.exists(CRED_FILE_PATH):
     # ✅ Render Secret File
     cred = credentials.Certificate(CRED_FILE_PATH)
@@ -141,28 +141,72 @@ def upload():
 
     return render_template("upload.html")
 
+def search_jamendo_tracks(query, limit=10):
+    url = "https://api.jamendo.com/v3.0/tracks"
+    params = {
+        "client_id": JAMENDO_API_KEY,
+        "format": "json",
+        "limit": limit,
+        "namesearch": query,
+        "audioformat": "mp31",
+        "include": "musicinfo+stats",
+        "order": "popularity_total"
+    }
+    response = requests.get(url, params=params)
+    if response.ok:
+        raw_results = response.json().get("results", [])
+        normalized = []
+        for r in raw_results:
+            normalized.append({
+                "id": r.get("id"),  # For linking to detailed page
+                "title": r.get("name"),
+                "artist": r.get("artist_name"),
+                "audio": r.get("audio"),
+                "album_image": r.get("album_image"),
+                "duration": r.get("duration"),
+                "source": "jamendo"
+            })
+        return normalized
+    else:
+        return []
+
 @app.route("/songs")
 def songs():
     query = request.args.get("q", "").strip().lower()
-    results = []
+    local_results = []
+    jamendo_results = []
 
+    # Get local songs
     for doc in db.collection("songs").stream():
         data = doc.to_dict()
-        if not query or \
-           query in data["title"].lower() or \
-           query in data["artist"].lower():
-            results.append(data)
+        if not query or query in data["title"].lower() or query in data["artist"].lower():
+            data["source"] = "local"
+            local_results.append(data)
 
-    results.sort(key=lambda x: (x["artist"].lower(), x["title"].lower()))
-    return render_template("player.html", songs=results, query=query, user=current_user_email())
+    # Get Jamendo songs
+    if query:
+        jamendo_results = search_jamendo_tracks(query)
+        for song in jamendo_results:
+            song["source"] = "jamendo"
+
+    all_results = local_results + jamendo_results
+
+    return render_template(
+        "player.html",
+        songs=all_results,
+        query=query,
+        user=current_user_email()
+    )
+
 
 @app.route("/songs/<path:filename>")
 def serve_song(filename):
     return send_from_directory(
         app.config["UPLOAD_FOLDER"],
         filename,
-        conditional=True
+        conditional=True,
     )
+
 
 @app.route("/song/<path:filename>")
 def song_page(filename):
@@ -174,6 +218,36 @@ def song_page(filename):
 
     song = song_data.to_dict()
     return render_template("song.html", song=song)
+
+
+@app.route("/jamendo/<track_id>")
+def jamendo_song_page(track_id):
+    url = "https://api.jamendo.com/v3.0/tracks"
+    params = {
+        "client_id": JAMENDO_API_KEY,
+        "format": "json",
+        "id": track_id,
+        "audioformat": "mp31",
+        "include": "musicinfo+stats"
+    }
+
+    response = requests.get(url, params=params)
+    if response.ok:
+        results = response.json().get("results", [])
+        if results:
+            song = results[0]
+            song_data = {
+                "title": song["name"],
+                "artist": song["artist_name"],
+                "uploader": "Jamendo",
+                "filename": "",
+                "audio": song["audio"],
+                "album_image": song.get("album_image", ""),
+                "duration": song.get("duration")
+            }
+            return render_template("song.html", song=song_data)
+    
+    return "Jamendo song not found", 404
 
 # ───────────────────────────────────────────────
 # Run
