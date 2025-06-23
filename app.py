@@ -12,7 +12,7 @@ from flask import (
     url_for, session, send_from_directory, flash
 )
 from werkzeug.utils import secure_filename
-from dotenv import load_dotenv  # only used in local dev
+
 
 import firebase_admin
 from firebase_admin import credentials, firestore, auth
@@ -20,7 +20,7 @@ from firebase_admin import credentials, firestore, auth
 # ───────────────────────────────────────────────
 # 1. Load .env when running locally
 # ───────────────────────────────────────────────
-load_dotenv()           # Render ignores this; it’s only for local dev
+      # Render ignores this; it’s only for local dev
 
 # ───────────────────────────────────────────────
 # 2. Initialise Firebase credentials
@@ -66,15 +66,11 @@ def allowed_file(fname: str) -> bool:
 
 def current_user_email() -> str | None:
     return session.get("email")
-
-# ───────────────────────────────────────────────
-# 5. Routes
 # ───────────────────────────────────────────────
 @app.route("/")
 def index():
     return render_template("index.html", user=current_user_email())
 
-# ---------- Auth ----------
 @app.route("/register", methods=["GET", "POST"])
 def register():
     if request.method == "POST":
@@ -82,7 +78,7 @@ def register():
         password = request.form["password"]
         try:
             auth.create_user(email=email, password=password)
-            flash("Registration successful – sign in now.", "success")
+            flash("Registration successful – please sign in.", "success")
             return redirect(url_for("login"))
         except Exception as e:
             flash(f"Error: {e}", "danger")
@@ -104,10 +100,9 @@ def login():
 @app.route("/logout")
 def logout():
     session.pop("email", None)
-    flash("Logged out.", "info")
+    flash("You’ve been logged out.", "info")
     return redirect(url_for("index"))
 
-# ---------- Upload ----------
 @app.route("/upload", methods=["GET", "POST"])
 def upload():
     if not current_user_email():
@@ -119,20 +114,20 @@ def upload():
         artist = request.form["artist"].strip()
 
         if not (song_file and allowed_file(song_file.filename)):
-            flash("Allowed formats: mp3 / wav / ogg", "warning")
+            flash("Unsupported file type; allowed: mp3 / wav / ogg", "warning")
             return redirect(request.url)
 
         filename = secure_filename(song_file.filename)
-        base, ext = os.path.splitext(filename)
-        path = os.path.join(UPLOAD_FOLDER, filename)
+        file_path = os.path.join(app.config["UPLOAD_FOLDER"], filename)
 
         counter = 1
-        while os.path.exists(path):
+        base, ext = os.path.splitext(filename)
+        while os.path.exists(file_path):
             filename = f"{base}_{counter}{ext}"
-            path = os.path.join(UPLOAD_FOLDER, filename)
+            file_path = os.path.join(app.config["UPLOAD_FOLDER"], filename)
             counter += 1
 
-        song_file.save(path)
+        song_file.save(file_path)
 
         db.collection("songs").add({
             "title": title,
@@ -141,43 +136,47 @@ def upload():
             "uploader": current_user_email(),
         })
 
-        flash("Song uploaded!", "success")
+        flash("Song uploaded successfully!", "success")
         return redirect(url_for("upload"))
 
     return render_template("upload.html")
 
-# ---------- Library ----------
 @app.route("/songs")
 def songs():
-    query = request.args.get("q", "").lower().strip()
-    results = [
-        doc.to_dict()
-        for doc in db.collection("songs").stream()
-        if not query
-        or query in doc.to_dict()["title"].lower()
-        or query in doc.to_dict()["artist"].lower()
-    ]
+    query = request.args.get("q", "").strip().lower()
+    results = []
+
+    for doc in db.collection("songs").stream():
+        data = doc.to_dict()
+        if not query or \
+           query in data["title"].lower() or \
+           query in data["artist"].lower():
+            results.append(data)
+
     results.sort(key=lambda x: (x["artist"].lower(), x["title"].lower()))
     return render_template("player.html", songs=results, query=query, user=current_user_email())
 
-# ---------- Stream file ----------
 @app.route("/songs/<path:filename>")
 def serve_song(filename):
-    return send_from_directory(UPLOAD_FOLDER, filename, conditional=True)
+    return send_from_directory(
+        app.config["UPLOAD_FOLDER"],
+        filename,
+        conditional=True
+    )
 
-# ---------- Single song page ----------
 @app.route("/song/<path:filename>")
 def song_page(filename):
-    match = next(
-        db.collection("songs").where("filename", "==", filename).stream(),
-        None
-    )
-    if not match:
+    doc_ref = db.collection("songs").where("filename", "==", filename).stream()
+    song_data = next(doc_ref, None)
+
+    if not song_data:
         return "Song not found", 404
-    return render_template("song.html", song=match.to_dict())
+
+    song = song_data.to_dict()
+    return render_template("song.html", song=song)
 
 # ───────────────────────────────────────────────
-# 6. Entrypoint
+# Run
 # ───────────────────────────────────────────────
-if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=int(os.getenv("PORT", 5000)))
+if __name__ == '__main__':
+    app.run(host='0.0.0.0', port=int(os.environ.get('PORT', 5000)))
