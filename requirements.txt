@@ -1,2 +1,5 @@
-Flask
+flask
 firebase-admin
+python-dotenv
+werkzeug
+gunicorn

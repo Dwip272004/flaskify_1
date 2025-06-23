@@ -12,7 +12,7 @@ from flask import (
     url_for, session, send_from_directory, flash
 )
 from werkzeug.utils import secure_filename
-from dotenv import load_dotenv  # Optional for local
+
 
 import firebase_admin
 from firebase_admin import credentials, firestore, auth
@@ -20,7 +20,7 @@ from firebase_admin import credentials, firestore, auth
 # ───────────────────────────────────────────────
 # Load env vars (used for local development)
 # ───────────────────────────────────────────────
-load_dotenv()  # Safe to use in dev; Render ignores this
+
 
 # ───────────────────────────────────────────────
 # Firebase Initialization from FIREBASE_CONFIG

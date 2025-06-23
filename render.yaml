@@ -1,0 +1,21 @@
+services:
+  - type: web
+    name: flaskify
+    env: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn app:app
+    autoDeploy: true
+
+    envVars:
+      - key: FIREBASE_CONFIG
+        sync: false  # Set manually in the Render dashboard (for security)
+      - key: SECRET_KEY
+        sync: false  # Also set in dashboard to keep it private
+
+    buildFilter:
+      paths:
+        - app.py
+        - requirements.txt
+        - templates/**
+        - static/**
+        - songs/**
